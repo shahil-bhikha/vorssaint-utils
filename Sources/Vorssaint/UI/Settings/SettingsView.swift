@@ -282,6 +282,7 @@ struct UpdatesView: View {
     @ObservedObject private var l10n = L10n.shared
     @ObservedObject private var updates = UpdateService.shared
     @AppStorage(DefaultsKey.autoCheckUpdates) private var autoCheck = true
+    @AppStorage(DefaultsKey.updateIconIndicator) private var showUpdateIconColor = true
 
     var body: some View {
         Section(l10n.s.updatesSection) {
@@ -289,6 +290,8 @@ struct UpdatesView: View {
                 .onChange(of: autoCheck) { _, value in
                     UpdateService.shared.autoCheckEnabled = value
                 }
+
+            Toggle(l10n.s.updateIconToggle, isOn: $showUpdateIconColor)
 
             statusRow
 
