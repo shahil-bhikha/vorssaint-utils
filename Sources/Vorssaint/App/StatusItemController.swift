@@ -203,7 +203,8 @@ final class StatusItemController {
     }
 
     /// Reflects keep-awake state and an available update in the icon. Updates
-    /// keep the blue attention glyph; an active session uses the chosen icon.
+    /// keep the blue attention glyph while the update-icon indicator option is
+    /// on; an active session uses the chosen icon.
     /// With the mute indicator option on, a red slashed mic joins the glyph
     /// while the microphone is muted, whatever the underlying state. The
     /// glyph can also hide entirely while metrics render in the title (user
@@ -213,7 +214,7 @@ final class StatusItemController {
         guard let button = statusItem?.button else { return }
         let defaults = UserDefaults.standard
         let updateAvailable: Bool
-        if case .available = UpdateService.shared.state {
+        if defaults.bool(forKey: DefaultsKey.updateIconIndicator), case .available = UpdateService.shared.state {
             updateAvailable = true
         } else {
             updateAvailable = false
