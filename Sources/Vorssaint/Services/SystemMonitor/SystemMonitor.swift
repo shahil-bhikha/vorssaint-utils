@@ -448,8 +448,7 @@ final class SystemMonitor: ObservableObject {
             || defaults.bool(forKey: DefaultsKey.menuBarBattery)
             || defaults.bool(forKey: DefaultsKey.menuBarBatteryTime)
             || alertBattery
-        plan.needPeripheralBattery = menuPanelNeeds.peripheralBattery
-            || defaults.bool(forKey: DefaultsKey.menuBarPeripheralBattery)
+        plan.needPeripheralBattery = panelNeedsPower || menuPanelNeeds.peripheralBattery
         plan.needGPUUsage = panelGPU || defaults.bool(forKey: DefaultsKey.menuBarGPU)
         plan.needCPUTemperature = panelTemps || menuPanelNeeds.cpuTemperature ||
             defaults.bool(forKey: DefaultsKey.menuBarCPUTemperature) || alertCPUTemperature
@@ -664,7 +663,8 @@ final class SystemMonitor: ObservableObject {
             }
 
             if plan.needPeripheralBattery {
-                if take(.peripheralBattery) {
+                let took = take(.peripheralBattery)
+                if took {
                     self.lastPeripheralBatteries = self.peripheralBatterySampler.sample(now: now)
                 }
                 next.peripheralBatteries = self.lastPeripheralBatteries
