@@ -18,6 +18,7 @@ struct PowerSection: View {
     @AppStorage(DefaultsKey.monitorPwrTimeRemaining) private var pwrTimeRemaining = true
     @AppStorage(DefaultsKey.monitorPwrHealth) private var pwrHealth = true
     @AppStorage(DefaultsKey.panelPowerOrder) private var powerOrderRaw = ""
+    @AppStorage(DefaultsKey.panelPeripheralBattery) private var showPeripheralBattery = true
     @State private var draggingBlock: Block?
 
     var body: some View {
@@ -45,7 +46,7 @@ struct PowerSection: View {
         }
     }
 
-    private enum Block: String, PanelOrderItem { case system, adapter, battery, remaining, health }
+    private enum Block: String, PanelOrderItem { case system, adapter, battery, remaining, health, peripheral }
 
     private var orderedBlocks: [Block] {
         _ = powerOrderRaw
@@ -68,12 +69,15 @@ struct PowerSection: View {
 
     private func isAvailable(_ block: Block) -> Bool {
         switch block {
-        case .system, .adapter: return true
+        case .system, .adapter, .peripheral: return true
         case .battery, .remaining, .health: return PowerSampler.hasInternalBattery
         }
     }
 
     private func isVisible(_ block: Block) -> Bool {
+        if block == .peripheral {
+            return showPeripheralBattery && !monitor.snapshot.peripheralBatteries.isEmpty
+        }
         guard let power = monitor.snapshot.power, !power.isEmpty else { return false }
         switch block {
         case .system: return pwrSystem && power.systemWatts != nil
@@ -83,12 +87,15 @@ struct PowerSection: View {
             return pwrTimeRemaining && power.hasBattery
                 && !power.externalConnected && !power.isCharging
         case .health: return pwrHealth && power.healthPercent != nil
+        case .peripheral: return false
         }
     }
 
     @ViewBuilder
     private func blockContent(_ block: Block, editing: Bool) -> some View {
-        if let power = monitor.snapshot.power, !power.isEmpty {
+        if block == .peripheral {
+            peripheralBatteryRows
+        } else if let power = monitor.snapshot.power, !power.isEmpty {
             switch block {
             case .system:
             if pwrSystem, let watts = power.systemWatts {
@@ -157,6 +164,7 @@ struct PowerSection: View {
                                    systemImage: "clock",
                                    isVisible: $pwrTimeRemaining)
             }
+            case .peripheral: EmptyView()
             }
         } else {
             if block == orderedBlocks.first {
@@ -192,6 +200,45 @@ struct PowerSection: View {
             PanelHiddenItemRow(title: FeatureStrings.batteryTime(l10n.language).title,
                                systemImage: "clock",
                                isVisible: $pwrTimeRemaining)
+        case .peripheral: EmptyView()
+        }
+    }
+
+    private var peripheralBatteryRows: some View {
+        VStack(alignment: .leading, spacing: 5) {
+            ForEach(PeripheralBatterySupport.sorted(monitor.snapshot.peripheralBatteries).prefix(5)) { device in
+                HStack(spacing: 8) {
+                    Image(systemName: peripheralIcon(for: device.kind))
+                        .font(.system(size: 9))
+                        .foregroundStyle(.secondary)
+                        .frame(width: 10)
+                    Text(device.name)
+                        .font(.system(size: 10.5, weight: .medium))
+                        .foregroundStyle(.secondary)
+                        .lineLimit(1)
+                        .truncationMode(.middle)
+                    Spacer(minLength: 8)
+                    Text("\(device.percent)%")
+                        .font(.system(size: 10.5, weight: .semibold))
+                        .monospacedDigit()
+                }
+            }
+            let extra = max(0, monitor.snapshot.peripheralBatteries.count - 5)
+            if extra > 0 {
+                Text("+\(extra)")
+                    .font(.system(size: 10))
+                    .foregroundStyle(.tertiary)
+            }
+        }
+    }
+
+    private func peripheralIcon(for kind: PeripheralBatteryKind) -> String {
+        switch kind {
+        case .keyboard: return "keyboard"
+        case .mouse: return "computermouse"
+        case .trackpad: return "rectangle.and.hand.point.up.left"
+        case .audio: return "headphones"
+        case .device: return "battery.100"
         }
     }
 

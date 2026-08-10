@@ -112,7 +112,10 @@ enum MenuBarMetric: String, CaseIterable, Identifiable {
 
     static func enabled(in defaults: UserDefaults) -> [MenuBarMetric] {
         order(in: defaults).filter {
-            defaults.bool(forKey: $0.defaultsKey)
+            // Peripheral battery lives only in the Power section panel now,
+            // never pinnable to the menu bar icon.
+            $0 != .peripheralBattery
+                && defaults.bool(forKey: $0.defaultsKey)
                 && defaults.bool(forKey: $0.feature.availabilityKey)
                 && $0.isAvailableOnCurrentHardware
         }
@@ -120,7 +123,8 @@ enum MenuBarMetric: String, CaseIterable, Identifiable {
 
     static func anyEnabled(in defaults: UserDefaults) -> Bool {
         allCases.contains {
-            defaults.bool(forKey: $0.defaultsKey)
+            $0 != .peripheralBattery
+                && defaults.bool(forKey: $0.defaultsKey)
                 && defaults.bool(forKey: $0.feature.availabilityKey)
                 && $0.isAvailableOnCurrentHardware
         }

@@ -75,6 +75,7 @@ enum DefaultsKey {
     static let previewSize = "previewSize"                // app switcher + dock preview thumbnail size
     static let autoCheckUpdates = "autoCheckUpdates"
     static let releaseNotesOnUpdate = "releaseNotesOnUpdate" // show What's New after an update
+    static let updateIconIndicator = "updateIconIndicator" // tint icon blue when an update is available
     static let appVolumes = "appVolumes"                  // [bundle id: 0...2]
     static let appOutputDevices = "appOutputDevices"      // [bundle id: audio device UID]
     static let mixerShowFinder = "mixerShowFinder"
@@ -228,6 +229,7 @@ enum DefaultsKey {
     static let menuBarBattery = "menuBarBattery"
     static let menuBarBatteryTime = "menuBarBatteryTime"
     static let menuBarPeripheralBattery = "menuBarPeripheralBattery"
+    static let panelPeripheralBattery = "panelPeripheralBattery" // Power section row, independent of the menu bar icon toggle above
     static let menuBarPower = "menuBarPower"
     static let menuBarFanSpeed = "menuBarFanSpeed"
     static let menuBarPreset = "menuBarPreset"           // dense
@@ -713,6 +715,7 @@ enum Defaults {
         DefaultsKey.previewSize: "normal",
         DefaultsKey.autoCheckUpdates: true,
         DefaultsKey.releaseNotesOnUpdate: true,
+        DefaultsKey.updateIconIndicator: true,
         DefaultsKey.updateShowcaseIntroVersion: "",
         DefaultsKey.updateShowcaseMediaOverride: "",
         DefaultsKey.mixerShowFinder: true,

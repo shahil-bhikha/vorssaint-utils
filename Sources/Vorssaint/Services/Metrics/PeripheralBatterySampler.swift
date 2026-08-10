@@ -15,6 +15,7 @@ final class PeripheralBatterySampler {
     private var bluetoothRefreshRunning = false
     private let fastCacheInterval: TimeInterval = 15
     private let bluetoothCacheInterval: TimeInterval = 300
+    private let gattReader = GATTBatteryReader(queue: DispatchQueue(label: "com.vorssaint.peripheral-battery.gatt", qos: .utility))
 
     func sample(now: TimeInterval) -> [PeripheralBatteryDevice] {
         startBluetoothRefreshIfNeeded(now: now)
@@ -40,13 +41,14 @@ final class PeripheralBatterySampler {
 
     private func startBluetoothRefreshIfNeeded(now: TimeInterval) {
         lock.lock()
-        guard PeripheralBatteryRefreshPolicy.shouldStartBluetoothRefresh(
+        let willStart = PeripheralBatteryRefreshPolicy.shouldStartBluetoothRefresh(
             now: now,
             lastStartedAt: bluetoothStartedAt,
             lastFinishedAt: bluetoothFinishedAt,
             isRunning: bluetoothRefreshRunning,
             interval: bluetoothCacheInterval
-        ) else {
+        )
+        guard willStart else {
             lock.unlock()
             return
         }
@@ -55,7 +57,9 @@ final class PeripheralBatterySampler {
         lock.unlock()
 
         bluetoothQueue.async { [weak self] in
-            let devices = Self.readBluetoothSystemProfilerDevices()
+            let profilerDevices = Self.readBluetoothSystemProfilerDevices()
+            let gattDevices = Self.readGATTDevices(using: self?.gattReader)
+            let devices = Self.uniqueDevices(from: profilerDevices + gattDevices)
             let finishedAt = ProcessInfo.processInfo.systemUptime
             guard let self else { return }
             lock.lock()
@@ -65,6 +69,18 @@ final class PeripheralBatterySampler {
             cachedAt = -.greatestFiniteMagnitude
             lock.unlock()
         }
+    }
+
+    private static func readGATTDevices(using reader: GATTBatteryReader?) -> [PeripheralBatteryDevice] {
+        guard let reader else { return [] }
+        let semaphore = DispatchSemaphore(value: 0)
+        var devices: [PeripheralBatteryDevice] = []
+        reader.read { result in
+            devices = result
+            semaphore.signal()
+        }
+        semaphore.wait()
+        return devices
     }
 
     private static func readFastDevices() -> [PeripheralBatteryDevice] {

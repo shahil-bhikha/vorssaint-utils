@@ -56,6 +56,8 @@
 	<string>Vorssaint taps individual app audio only to adjust each app's volume in the mixer. Nothing is recorded or leaves your Mac.</string>
 	<key>NSMicrophoneUsageDescription</key>
 	<string>Vorssaint records your microphone only when you turn it on for a screen recording. The audio stays on your Mac unless you choose to create a temporary link.</string>
+	<key>NSBluetoothAlwaysUsageDescription</key>
+	<string>Vorssaint reads the battery level of your connected Bluetooth accessories to show it in the menu bar. Nothing is recorded or leaves your Mac.</string>
 	<key>NSCameraUsageDescription</key>
 	<string>Vorssaint shows your camera only in the preview window you open, so you can check how you look before a call. Nothing is recorded or leaves your Mac.</string>
 	<key>NSDownloadsFolderUsageDescription</key>
