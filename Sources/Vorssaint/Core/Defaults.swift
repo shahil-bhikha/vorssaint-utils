@@ -76,6 +76,7 @@ enum DefaultsKey {
     static let autoCheckUpdates = "autoCheckUpdates"
     static let releaseNotesOnUpdate = "releaseNotesOnUpdate" // show What's New after an update
     static let updateIconIndicator = "updateIconIndicator" // tint icon blue when an update is available
+    static let ignoreUpdates = "ignoreUpdates" // fork: never check for updates (banner, tint, notification all off)
     static let appVolumes = "appVolumes"                  // [bundle id: 0...2]
     static let appOutputDevices = "appOutputDevices"      // [bundle id: audio device UID]
     static let mixerShowFinder = "mixerShowFinder"
@@ -716,6 +717,7 @@ enum Defaults {
         DefaultsKey.autoCheckUpdates: true,
         DefaultsKey.releaseNotesOnUpdate: true,
         DefaultsKey.updateIconIndicator: true,
+        DefaultsKey.ignoreUpdates: true, // fork: update checking is off by default
         DefaultsKey.updateShowcaseIntroVersion: "",
         DefaultsKey.updateShowcaseMediaOverride: "",
         DefaultsKey.mixerShowFinder: true,

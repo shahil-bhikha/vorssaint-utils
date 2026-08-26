@@ -1000,6 +1000,7 @@ struct SwitcherSettings: View {
 
 struct AboutSettings: View {
     @ObservedObject private var l10n = L10n.shared
+    @AppStorage(DefaultsKey.ignoreUpdates) private var ignoreUpdates = true
 
     var body: some View {
         Form {
@@ -1007,7 +1008,10 @@ struct AboutSettings: View {
                 aboutContent
             }
 
-            UpdatesView()
+            // Fork: in-app updates are disabled, so the section stays hidden.
+            if !ignoreUpdates {
+                UpdatesView()
+            }
         }
         .formStyle(.grouped)
     }

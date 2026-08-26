@@ -45,10 +45,18 @@ final class UpdateService: ObservableObject {
         }
     }
 
+    /// Fork: updates are handled out-of-band (git pull + rebuild), so the
+    /// in-app updater is disabled entirely: no GitHub check, no banner, no
+    /// icon tint, no notification.
+    var ignoreUpdates: Bool {
+        UserDefaults.standard.object(forKey: DefaultsKey.ignoreUpdates) as? Bool ?? true
+    }
+
     // MARK: - Scheduling
 
     /// Called at launch: checks shortly after start and then daily, if enabled.
     func startAutomaticChecks() {
+        guard !ignoreUpdates else { return }
         consumeInstallResult()
         // The local dev build never auto-updates, but can simulate the
         // "update available" UI via the `simulateUpdate` default, for testing.
@@ -84,6 +92,7 @@ final class UpdateService: ObservableObject {
     // MARK: - Check
 
     func check(manual: Bool) {
+        guard !ignoreUpdates else { return }
         if AppInfo.isDeveloperBuild {
             // No real update target; reflect the simulation default so the
             // notification UI can be exercised locally.
@@ -144,6 +153,7 @@ final class UpdateService: ObservableObject {
     /// or the panel opens, so a new release surfaces promptly without hammering the
     /// API. The hourly timer is the floor; this makes it feel immediate.
     func checkIfStale(maxAge: TimeInterval = 15 * 60) {
+        if ignoreUpdates { return }
         if AppInfo.isDeveloperBuild { return }
         guard autoCheckEnabled else { return }
         switch state {
